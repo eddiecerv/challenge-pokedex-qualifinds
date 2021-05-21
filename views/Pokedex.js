@@ -17,6 +17,7 @@ import axios from 'axios';
 import Slot from '../components/Slot';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getPokedex, getPokemons } from '../functions/getPokemonData';
 
 const PokedexScreen = ({ navigation, route }) => {
     const [screenSize, setSize] = useState(0);
@@ -25,12 +26,16 @@ const PokedexScreen = ({ navigation, route }) => {
     const [pokemons, setPokemons] = useState([]);
 
     const filterList = (e) => {
-        if( e.length > 2 ) {
+        if( isNaN( parseInt(e) ) ) {
+          if( e.length > 2 ) {
             e = e.toLowerCase();
             setPokemons( allPokemons.filter(pokemon => pokemon.pokemon_species.name.toLowerCase().includes(e) ) );
-        } else{
+          } else{
             setPokemons( allPokemons.slice(0, 50) );
-        }
+          }
+        } else{
+          setPokemons( allPokemons.filter(pokemon => pokemon.entry_number === parseInt(e) ) );
+        }        
     };
 
     useEffect( async () => {
@@ -40,52 +45,27 @@ const PokedexScreen = ({ navigation, route }) => {
           setListPokemons( values ? JSON.parse(values) : [] );
           
           if( !allPokemons.length ) {
-            fetch(`${route.params.host}/pokedex`)
-            .then( res => res.json())
-            .then( result => {
-                //console.log('Results: ', result.results)
-                //Get Kanto 
-                //console.log('Data: ', result.results[0].url);
-                axios.get(result.results[0].url).then(
-                    data => {
-                        //console.log('Size: ', data.data.pokemon_entries.length);
-                        setOffset(50);
-                        setPokemons(data.data.pokemon_entries.slice(0, offsetList));
-                        setListPokemons(data.data.pokemon_entries);
-                    }
-                ).catch( e => console.log('Error: ', e));
-            }).catch( e => {} );
+            const result = await getPokedex();
+            const pokemonDB = await getPokemons( result.results[0].url );
+            
+            setOffset(50);
+            setPokemons(pokemonDB.pokemon_entries.slice(0, offsetList));
+            setListPokemons(pokemonDB.pokemon_entries);
           } else{
-            console.log('Si había guardados', allPokemons);
             setOffset(50);
             setPokemons(allPokemons.slice(0, offsetList));
           }
 
         } catch(e) {
-          console.log('Error catching: ', e);
-          fetch(`${route.params.host}/pokedex`)
-          .then( res => res.json())
-          .then( result => {
-              //console.log('Results: ', result.results)
-              //Get Kanto 
-              //console.log('Data: ', result.results[0].url);
-              axios.get(result.results[0].url).then(
-                  data => {
-                      //console.log('Size: ', data.data.pokemon_entries.length);
-                      setOffset(50);
-                      setPokemons(data.data.pokemon_entries.slice(0, offsetList));
-                      setListPokemons(data.data.pokemon_entries);
-                  }
-              ).catch( e => console.log('Error: ', e));
-          }).catch( e => {} );
+          const result = await getPokedex();
+          const pokemonDB = await getPokemons( result.results[0].url );
+          setOffset(50);
+          setPokemons(pokemonDB.pokemon_entries.slice(0, offsetList));
+          setListPokemons(pokemonDB.pokemon_entries);
         }
 
         if( allPokemons.length ){
-          try {
-            await AsyncStorage.setItem('@all_pokemons', JSON.stringify( allPokemons ) );
-          } catch(e) {
-            console.log('Error catching: ', e);
-          }
+          await AsyncStorage.setItem('@all_pokemons', JSON.stringify( allPokemons ) );
         }
 
       }

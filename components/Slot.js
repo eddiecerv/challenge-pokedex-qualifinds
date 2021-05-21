@@ -1,28 +1,64 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, Text, Image } from "react-native";
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getPokemonData, getPokemonForm } from '../functions/getPokemonData';
+
 const Slot = (props) => {
+
+    const verifyPokemonData = async (id) => {
+      try {
+        let pokemonData = await AsyncStorage.getItem('@pokemonLocalDB');
+        pokemonData = pokemonData ? JSON.parse(pokemonData) : [];
+
+        const pokemonStored = pokemonData.filter( pokemon => pokemon.id === id);
+        
+        if( pokemonStored.length === 1 ){
+          return pokemonStored[0];
+        } else{
+          return 0;
+        }
+        
+      } catch(e) {
+        return 0;
+      }
+    }
+
     const [pokemon, setPokemon] = useState(0);
 
-    useEffect(() => {
+    useEffect( async () => {
         if(!pokemon) {
-          fetch(`${props.hostname}/pokemon/${props.entry_number}`)
-          .then( res => res.json() )
-          .then( result => {
+          const stored = await verifyPokemonData(props.entry_number);
+          
+          if( !stored ) {
+              const result = await getPokemonData(props.entry_number);
               setPokemon(result);
-          }).catch(e => console.log('Cannot get pokemon'));
+
+                // Get and Store in local database
+              const pokemonData = await AsyncStorage.getItem('@pokemonLocalDB');
+              pokemonData = pokemonData ? JSON.parse(pokemonData) : [];
+              const newPokemonStored = {
+                id: result.id,
+                species: { name: result.species.name }, 
+                sprites: { front_default: result.sprites.front_default } 
+              };
+
+              pokemonData.push( newPokemonStored );
+              await AsyncStorage.setItem('@pokemonLocalDB', JSON.stringify( pokemonData ) );
+          } else{
+            setPokemon( stored );
+          }
         }
     }, [props.entry_number]);
 
     const [img, setPokemonImg] = useState("https://reactnative.dev/img/tiny_logo.png");
 
-    useEffect(() => {
+    useEffect( async () => {
       if( !pokemon ) {
-        fetch(`${props.hostname}/pokemon-form/${props.entry_number}`)
-        .then( res => res.json() )
-        .then( result => {
-            setPokemonImg(result.sprites.front_default);
-        }).catch(e => console.log('Cannot get pokemon form'));
+        const result = await getPokemonData(props.entry_number);
+        setPokemonImg(result.sprites.front_default);
+      } else{
+        setPokemonImg(pokemon.sprites.front_default);
       }
     });
 

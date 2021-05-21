@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
     StyleSheet,
     Text,
@@ -6,19 +6,20 @@ import {
     View, Button
 } from 'react-native';
 
-import {
-    Colors,
-    DebugInstructions,
-    Header,
-    LearnMoreLinks,
-    ReloadInstructions,
-  } from 'react-native/Libraries/NewAppScreen';
+import { Colors } from 'react-native/Libraries/NewAppScreen';
+
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const HomeScreen = (props) => {
     const isDarkMode = useColorScheme() === 'dark';
     const backgroundStyle = {
         backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
     };
+    /*
+    useEffect(async () => {
+      await AsyncStorage.removeItem('@pokemonLocalDB');
+    });
+    */    
       
     return (
       <View style={{ marginTop: 100 }}>

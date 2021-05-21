@@ -16,34 +16,32 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
 import Range from '../components/Range';
+import { getPokemonData, getPokemonForm } from '../functions/getPokemonData';
 
 const PokemonScreen = ({ navigation, route }) => {
     const [pokemon, setPokemon] = useState(0);
-    useEffect(() => {
+    useEffect( async () => {
         
         if( !pokemon ){
-            axios(`${route.params.host}/pokemon/${route.params.pokemon.entry_number}`).then(
-                result => setPokemon(result.data)
-            ).catch( e => console.log('Error: ', e))
+            const result = await getPokemonData(route.params.pokemon.entry_number);
+            setPokemon( result );
         }
         
     });
 
     const [pokeData, setPokemonData] = useState(0);
-    useEffect(() => {
+    useEffect( async () => {
         if( !pokeData ){
-            axios(`${route.params.host}/pokemon-form/${route.params.pokemon.entry_number}`).then(
-                result => setPokemonData(result.data)
-            ).catch( e => console.log('Error: ', e))
+            const result = await getPokemonForm(route.params.pokemon.entry_number);
+            setPokemonData(result)
         }
     });
 
     const [specieData, setSpecie] = useState(0);
-    useEffect(() => {
+    useEffect( async () => {
         if( !specieData ){
-            axios(`${route.params.host}/pokemon-species/${route.params.pokemon.entry_number}`).then(
-                result => setSpecie(result.data)
-            ).catch( e => console.log('Error: ', e)) 
+            const result = await getPokemonSpecie(route.params.pokemon.entry_number);
+            setSpecie(result);
         }
     });
 
@@ -59,9 +57,8 @@ const PokemonScreen = ({ navigation, route }) => {
         if( specieData && specieData.flavor_text_entries ) {
             setPokemonDescription(specieData.flavor_text_entries.filter( item => item.language.name === 'en' )[0].flavor_text);
         }
-    })
-    //console.log('PokeData Specie: ', specieData ? specieData.flavor_text_entries[0].flavor_text : '');
-
+    });
+    
     const isDarkMode = useColorScheme() === 'dark';
 
     const backgroundStyle = {
