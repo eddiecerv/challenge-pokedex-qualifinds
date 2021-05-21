@@ -1,47 +1,35 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, Text, Image } from "react-native";
-import { FlatGrid } from 'react-native-super-grid';
-
-import axios from 'axios';
 
 const Slot = (props) => {
-    const [pokemon, setPokemon] = React.useState({});
-    const [img, setPokemonImg] = React.useState("https://reactnative.dev/img/tiny_logo.png");
+    const [pokemon, setPokemon] = useState(0);
 
-    React.useEffect(() => {
-        fetch(`${props.hostname}/pokemon/${props.entry_number}`)
-        .then( res => res.json() )
-        .then( result => {
-            setPokemon(result);
-        }).catch(e => console.log('Cannot get pokemon'));
+    useEffect(() => {
+        if(!pokemon) {
+          fetch(`${props.hostname}/pokemon/${props.entry_number}`)
+          .then( res => res.json() )
+          .then( result => {
+              setPokemon(result);
+          }).catch(e => console.log('Cannot get pokemon'));
+        }
+    }, [props.entry_number]);
 
+    const [img, setPokemonImg] = useState("https://reactnative.dev/img/tiny_logo.png");
 
+    useEffect(() => {
+      if( !pokemon ) {
         fetch(`${props.hostname}/pokemon-form/${props.entry_number}`)
         .then( res => res.json() )
         .then( result => {
-            console.log('Result: ', result);
             setPokemonImg(result.sprites.front_default);
-            console.log('Src: ', img);
         }).catch(e => console.log('Cannot get pokemon form'));
-
-    }, []);
-
-    /*
-    React.useEffect(() => {
-        
-    }, []);
-    */
+      }
+    });
 
     return (
         <View style={[styles.itemContainer, { backgroundColor: "#fff", backgroundImage: `url(${img})` }]}>
-            
-            <Image
-                style={styles.icon}
-                source={{ uri: img }}
-            />
-            
+            <Image style={styles.icon} source={{ uri: img }}/>
             <Text style={styles.itemName}>{props.pokemon_species.name}</Text>
-            { /* <Text style={styles.itemCode}>{props.entry_number}</Text> */ }
         </View>
     )
 };
@@ -79,6 +67,6 @@ const styles = StyleSheet.create({
       justifyContent: 'center',
       textAlign: 'center'
     },
-  });
+});
 
 export default Slot;

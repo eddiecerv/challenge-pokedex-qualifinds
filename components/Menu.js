@@ -1,5 +1,4 @@
 import React from 'react';
-import type { Node } from 'react';
 
 import {
     SafeAreaView,
@@ -16,16 +15,11 @@ const onPressLearnMore = () => {
     console.log('Do something: ');
 };
 
-const Menu = (): Node => {
+const Menu = () => {
     return (
-        <View style={{
-            flexDirection: "row",
-            height: 100,
-            padding: 20,
-            backgroundColor: "red"
-        }}>
+        <View style={styles.view}>
         <Image
-        style={{ width: 180, height: 60, marginLeft:"auto", marginRight:"auto", }}
+        style={styles.image}
         source={{
           uri: 'https://images.wikidexcdn.net/mwuploads/esssbwiki/7/77/latest/20111028181540/TituloUniversoPok%C3%A9mon.png',
         }}
@@ -33,5 +27,16 @@ const Menu = (): Node => {
         </View>
     );
 };
+
+const styles = StyleSheet.create({
+  view: {
+    flexDirection: "row",
+    height: 100,
+    padding: 20,
+    backgroundColor: "red",
+    marginBottom: 10
+  },
+  image: { width: 180, height: 60, marginLeft:"auto", marginRight:"auto", }
+});
 
 export default Menu;
